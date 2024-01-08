@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ComponentList from '$lib/components/component-list.svelte';
+	import PageBuilder from '$lib/components/page-builder.svelte';
 	import SelectedComponentPreview from '$lib/components/selected-component-preview.svelte';
 	import type { remoteInfo } from '$lib/store/remote';
 	import { getContext, onMount } from 'svelte';
@@ -17,11 +18,9 @@
 </script>
 
 <!-- a div on the left side which is scrollable and another that is not scrollable on the right -->
-<div class="flex items-center h-screen">
-	<div class="h-[calc(100vh-200px)] w-full flex justify-center items-center">
-		<ComponentList bind:components bind:selectedComponentName />
-		<div class="flex-1">
-			<SelectedComponentPreview bind:selectedComponentName />
-		</div>
+<div class="flex">
+	<div class="w-full flex flex-col justify-center items-center">
+		<!-- <SelectedComponentPreview bind:selectedComponentName /> -->
+		<PageBuilder />
 	</div>
 </div>

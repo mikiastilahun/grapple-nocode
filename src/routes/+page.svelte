@@ -20,7 +20,7 @@
 
 		remote.set({
 			components: remoteEntry.modules.map((module: any) => module.name),
-			remoteEntryUrl: remoteEntry.metadata.remote,
+			remoteEntryUrl: remoteEntryUrl.replace('dashboard.json', 'remoteEntry.js'),
 			remoteName: remoteEntry.id
 		});
 

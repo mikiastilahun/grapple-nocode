@@ -18,7 +18,7 @@
 				element.innerHTML = '';
 			}
 			// @ts-ignore
-			__federation_method_setRemote('Components', {
+			__federation_method_setRemote($remote.remoteName, {
 				url: $remote.remoteEntryUrl,
 				format: 'var',
 				from: 'webpack'
@@ -34,12 +34,7 @@
 			new Component({
 				target: section.component,
 				props: {
-					schema: {
-						'field-properties': {
-							'hidden-fields': ['gruppentyp', 'gruppenname']
-						}
-					},
-					enableFilter: false
+					schema: {}
 				}
 			});
 		};

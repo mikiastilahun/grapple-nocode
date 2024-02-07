@@ -23,7 +23,7 @@
 		if (search) {
 			components = fuzzysort.go(search, components).map((component) => component.target);
 		} else {
-			components = $remote.components;
+			components = $remote ? $remote.components : [];
 		}
 	}
 </script>

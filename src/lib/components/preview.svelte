@@ -5,24 +5,25 @@
 	import ComponentList from './component-list.svelte';
 	import { __federation_method_setRemote, __federation_method_getRemote } from '__federation__';
 
-	let showComponentList: boolean = false;
-	let sections: any = [];
+	let sections: any = [
+		// {
+		// 	componentName: 'Gruppe/count',
+		// 	component: {
+		// 		__svelte_meta: {
+		// 			loc: { file: 'src/lib/components/page-builder.svelte', line: 181, column: 9, char: 5019 }
+		// 		}
+		// 	}
+		// }
+	];
 	let remote = getContext<Writable<remoteInfo>>('remote');
 
-	$: {
-		console.log({ sections: JSON.stringify(sections) });
-	}
-
-	let search: string;
-	let showEdit: boolean = false;
-	let selectedSection: any;
+	let showComponentList = false;
 
 	const loadComponent = function (section: { componentName: string; component: any; props: any }) {
 		return async () => {
-			const element = document.getElementById('Components');
-			if (element) {
-				element.innerHTML = '';
-			}
+			const element = document.createElement('div');
+			document.getElementById('Components').appendChild(element);
+
 			// @ts-ignore
 			__federation_method_setRemote($remote.remoteName, {
 				url: $remote.remoteEntryUrl,
@@ -36,49 +37,61 @@
 				`./${section.componentName}`
 			);
 			const Component = loadedComponent.default;
+			console.log({ Component });
 
 			new Component({
-				target: section.component,
-				props: {
-					...section.props
-				}
+				target: element
 			});
 		};
 	};
 
-	let handleSelectedComponentName = async function (event: any) {
-		console.log(event.detail);
-		let section = {
-			componentName: event.detail,
-			component: undefined,
-			props: undefined
-		};
-		sections = [...sections, section];
-
-		tick();
-
-		await loadComponent(section)();
-
-		showComponentList = false;
-	};
-
-	let removeSection = function (section: any) {
-		console.log({
-			section
+	let loadSections = async () => {
+		sections.forEach(async (section: any) => {
+			console.log({ section });
+			await loadComponent(section)();
 		});
-		sections = sections.filter((s: any) => s.componentName !== section.componentName);
-
-		tick();
-
-		// remove the component from the dom
-		section.component.remove();
 	};
 </script>
 
 {#if showComponentList}
-	<!-- show as popup with the ability to cancel -->
+	<div class="flex justify-center">
+		<div class="flex justify-center max-w-screen-lg">
+			<div id="Components" />
+		</div>
+	</div>
+{:else}
+	<div class="h-screen w-full flex justify-center items-center">
+		<div class="flex flex-col gap-4 border-2 bg-zinc-400 w-96 p-4 rounded">
+			<label for="props" class="text-gray-500"> JSON </label>
+			<textarea
+				class="border-2 border-gray-300 rounded-md p-2"
+				on:input={(e) => {
+					try {
+						// @ts-ignore
+						sections = JSON.parse(e.target.value);
+					} catch (e) {
+						console.log('not valid json');
+					}
+				}}
+			/>
+			<button
+				class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+				on:click={async () => {
+					showComponentList = true;
+					await tick();
+					await loadSections();
+				}}
+			>
+				Submit
+			</button>
+		</div>
+	</div>
+{/if}
+
+<!-- 
+{#if showComponentList}
 	<div
-		class="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50"
+		class="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
 	>
 		<div class="bg-white shadow-md rounded-md flex flex-col p-4 gap-4">
 			<div class="flex justify-between">
@@ -102,13 +115,13 @@
 			</div>
 		</div>
 	</div>
-{/if}
+{/if} -->
 
 <!-- <ComponentList on:selectedComponentName={handleSelectedComponentName} /> -->
 
 <!-- a three col fullpage section with the middle col having 60% width -->
 
-<div class="flex justify-end p-4">
+<!-- <div class="flex justify-end p-4">
 	<button
 		class="px-4 py-3 bg-sky-200 hover:bg-sky-400 hover:text-white rounded"
 		on:click={() => {
@@ -116,12 +129,13 @@
 			const copyText = JSON.stringify(sections);
 			console.log({ copyText });
 			navigator.clipboard.writeText(copyText);
+			alert('Copied to clipboard');
 		}}
 	>
 		Export current configuration
 	</button>
-</div>
-<div class="flex flex-col w-screen">
+</div> -->
+<!-- <div class="flex flex-col w-screen">
 	<div class="flex-1 flex max-h-[calc(100vh-100px)]">
 		<div class="w-1/4 bg-gray-100 overflow-y-scroll">
 			<ComponentList on:selectedComponentName={handleSelectedComponentName} bind:search />
@@ -160,7 +174,6 @@
 						<div class="grid gap-4 w-full mt-4 max-w-5xl">
 							{#each sections as section}
 								<div class="group hover:cursor-pointer flex flex-col gap-2">
-									<!-- an edit icon and a remove icon on top right side -->
 									<div class="justify-end gap-4 flex">
 										<button
 											class="bg-blue-500 hover:bg-blue-700 text-white font-bold px-4 rounded hidden group-hover:flex"
@@ -217,7 +230,7 @@
 
 				{#if showEdit}
 					<div class="w-1/4 transition-all ease-in-out">
-						<!-- close icon -->
+
 						<div class="flex justify-end">
 							<button
 								class="bg-red-500 hover:bg-red-700 text-white font-bold px-4 rounded"
@@ -226,7 +239,7 @@
 								Close
 							</button>
 						</div>
-						<!-- input for name with label -->
+
 						<div class="flex flex-col gap-4">
 							<label for="name" class="text-gray-500"> Name </label>
 							<input
@@ -254,8 +267,6 @@
 									class=" bg-blue-500 hover:bg-blue-700 text-white font-bold px-4 rounded"
 									on:click={async () => {
 										console.log({ selectedSection });
-										// await removeSection(selectedSection);
-
 										await tick();
 
 										await loadComponent(selectedSection)();
@@ -279,4 +290,4 @@
 			</div>
 		</div>
 	</div>
-</div>
+</div> -->

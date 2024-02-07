@@ -21,5 +21,5 @@
 
 <div>
 	<Nav />
-	<PageBuilder />
+	<Preview />
 </div>
